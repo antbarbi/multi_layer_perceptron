@@ -13,7 +13,7 @@ def phase_selector() -> None:
     parser_split = subparsers.add_parser("split", help="Split phase")
     parser_split.add_argument('file', type=str, help="Path to the dataset CSV file")
     parser_split.add_argument('-o', '--output_dir', type=str, help="Relative path to the output of the split function", default=".")
-    parser_split.add_argument('-s', "--seed", type=int, help="Seed for the random split", default=42)
+    parser_split.add_argument('-s', "--seed", type=int, help="Seed for the random split", default=None)
 
 
     # Create the parser for the "training" phase
