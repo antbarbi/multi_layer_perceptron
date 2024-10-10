@@ -10,7 +10,7 @@ def parser() -> argparse.Namespace:
 
     parser.add_argument('file', type=str, help="Path to the dataset CSV file")
     parser.add_argument('-o', '--output_dir', type=str, help="Relative path to the output of the split function", default=".")
-    parser.add_argument('-s', "--seed", type=int, help="Seed for the random split", default=42)
+    parser.add_argument('-s', "--seed", type=int, help="Seed for the random split", default=None)
 
     args = parser.parse_args()
 
@@ -24,14 +24,17 @@ def parser() -> argparse.Namespace:
     return args.file, args.output_dir, args.seed
 
 
-def main(dataset: str, output_dir: str, random_seed: int) -> None:
+def main(dataset: str, output_dir: str, random_seed: int = None) -> None:
 
     data = pd.read_csv(dataset)
 
     train_ratio = 0.8
     valid_ratio = 0.2
 
-    data_shuffled = data.sample(frac=1, random_state=random_seed).reset_index(drop=True)
+    if random_seed:
+        data_shuffled = data.sample(frac=1, random_state=random_seed).reset_index(drop=True)
+    else:
+        data_shuffled = data.sample(frac=1).reset_index(drop=True)
 
     train_size = int(len(data) * train_ratio)
     train_set = data_shuffled[:train_size]
