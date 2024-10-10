@@ -33,5 +33,5 @@ def main():
 
 if __name__ == "__main__":
     args = phase_selector()
-    if args.phase:
+    if args.phase.split:
         split.main(args.file, args.output_dir, args.seed)

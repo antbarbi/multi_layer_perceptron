@@ -25,7 +25,6 @@ def parser() -> argparse.Namespace:
 
 
 def main(dataset: str, output_dir: str, random_seed: int = None) -> None:
-    print(random_seed)
     data = pd.read_csv(dataset)
 
     train_ratio = 0.8
