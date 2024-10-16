@@ -4,25 +4,26 @@ import numpy as np
 
 class MultiLayerPerceptron:
     def __init__(self):
-        pass
-        # self.layers = []
+        self._network = None
 
     def predict(self) -> float:
         return None
 
     def createNetwork(self, layers: list[DenseLayer]) -> list[DenseLayer]:
         network = layers
-        input_dim = None
-        for layer in network:
-            if input_dim:
-                layer.initialize(input_dim)
-            input_dim = layer._num_of_neuron
+        for i, layer in enumerate(network):
+            if i == 0:
+                layer.initialize(layer._num_of_neuron)
+                print(f"layer({i}):", layer._num_of_neuron)
+            else:
+                layer.initialize(network[i-1]._num_of_neuron)
+                print(f"layer({i}):", network[i-1]._num_of_neuron)
         return network
 
     
     def fit(
             self,
-            network,
+            network: list[DenseLayer],
             data_train: pd,
             data_valid: pd,
             loss: str,
@@ -33,5 +34,13 @@ class MultiLayerPerceptron:
 
         assert len(network) > 3
 
-        for epoch in range(epochs):
-            pass
+        output = None
+        for layer in network:
+            if output:
+                layer.forward(output)
+            else:
+                layer.forward(data_train)
+
+
+        # for epoch in range(epochs):
+        #     pass
