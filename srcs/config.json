@@ -1,6 +1,6 @@
 {
     "layers": [
-      {"units": 31, "activation": "sigmoid"},
+      {"units": 24, "activation": "sigmoid"},
       {"units": 24, "activation": "sigmoid", "initializer": "heUniform"},
       {"units": 24, "activation": "sigmoid", "initializer": "heUniform"},
       {"units": 24, "activation": "sigmoid", "initializer": "heUniform"},

@@ -35,7 +35,7 @@ def main():
     with open("config.json", "r") as file:
         config = json.load(file)
 
-    network = model.createNetwork([create_layer(layer) for layer in config["layers"]])
+    network = model.createNetwork([create_layer(layer) for layer in config["layers"]], 31)
 
     model.fit(
         network,

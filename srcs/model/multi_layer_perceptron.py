@@ -9,15 +9,17 @@ class MultiLayerPerceptron:
     def predict(self) -> float:
         return None
 
-    def createNetwork(self, layers: list[DenseLayer]) -> list[DenseLayer]:
+    def createNetwork(self, layers: list[DenseLayer], input_shape: int) -> list[DenseLayer]:
         network = layers
         for i, layer in enumerate(network):
             if i == 0:
-                layer.initialize(layer._num_of_neuron)
-                print(f"layer({i}):", layer._num_of_neuron)
+                # Initialize the first layer with the input_shape and set weights to (31, 24)
+                layer.initialize(input_shape)
+                print(f"layer({i}): {layer.weights.shape}")  # Weights should be (31, 24)
             else:
+                # Initialize subsequent layers with the number of neurons from the previous layer
                 layer.initialize(network[i-1]._num_of_neuron)
-                print(f"layer({i}):", network[i-1]._num_of_neuron)
+                print(f"layer({i}): {layer.weights.shape}")
         return network
 
     
@@ -36,10 +38,10 @@ class MultiLayerPerceptron:
 
         output = None
         for layer in network:
-            if output:
+            if output is not None:
                 layer.forward(output)
             else:
-                layer.forward(data_train)
+                output = layer.forward(data_train)
 
 
         # for epoch in range(epochs):
