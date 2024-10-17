@@ -50,6 +50,7 @@ def main():
         epochs=1300
     )
 
+    model.save_model()
     
 
 
