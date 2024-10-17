@@ -45,8 +45,10 @@ class MultiLayerPerceptron:
     def fit(
             self,
             network: list[DenseLayer],
-            data_train: pd.DataFrame,
-            data_valid: pd.DataFrame,
+            X_train: pd.DataFrame,
+            y_train: pd.DataFrame,
+            X_valid: pd.DataFrame,
+            y_valid: pd.DataFrame,
             loss_func: str,
             learning_rate: float,
             batch_size: int,
@@ -56,24 +58,31 @@ class MultiLayerPerceptron:
         assert len(network) > 3
 
         for epoch in range(epochs):
-            forward_output: pd.DataFrame = data_train
+            forward_output: pd.DataFrame = X_train
             for layer in network:
                 forward_output = layer.forward(forward_output)
 
             assert loss_func in L
             # Calculate Loss with Loss Function
-            loss = L[loss_func](data_valid, forward_output)
+            loss = L[loss_func](y_train, forward_output)
 
-            delta = forward_output - data_valid
+            delta = forward_output - y_train
 
             for layer in reversed(network):
                 delta = layer.backward(delta, learning_rate)
-            print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss}")
+
+            val_output = X_valid
+            for layer in network:
+                val_output = layer.forward(val_output)
+            
+            val_loss = L[loss_func](y_valid, val_output)
+            
+            print(f"Epoch {epoch + 1}/{epochs:<3} | Loss: {loss:<10.4f} | Val-Loss: {val_loss:<10.4f}")
 
         self._network = network
 
-    def save_model(self):
 
+    def save_model(self):
         model = {}
         model["layers"] = [
             {
@@ -85,6 +94,7 @@ class MultiLayerPerceptron:
         ]
         with open("model.json", "w") as file:  # Open file in text mode
             json.dump(model, file)
+
 
     def load_model(self, file_name: str):
         with open(file_name, "r") as file:  # Open file in text mode

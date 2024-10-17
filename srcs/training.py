@@ -15,22 +15,27 @@ def create_layer(config: dict):
 
 def main():
     data = pd.read_csv("../Training_data.csv")
+    valid = pd.read_csv("../Validation_data.csv")
     input_shape = data.shape[1]
-    output_shape = 2
     
     #Preprocess
     column_names = [f'col{i+1}' if i != 1 else "type" for i in range(input_shape)]
     data.columns = column_names
+    valid.columns = column_names
 
-    data_train = data.drop(labels="type", axis=1)
+    X_train = data.drop(labels="type", axis=1)
+    X_valid = valid.drop(labels="type", axis=1)
     scaler = StandardScaler()
-    data_train = scaler.fit_transform(data_train)
+    X_train = scaler.fit_transform(X_train)
+    X_valid = scaler.fit_transform(X_valid)
     
-    input_shape = data_train.shape[1]
-    data_valid = data[["type"]]
+    input_shape = X_train.shape[1]
+    y_train = data[["type"]]
+    y_valid = valid[["type"]]
 
     ohe = OneHotEncoder(sparse_output=False)
-    data_valid = ohe.fit_transform(data_valid)
+    y_train = ohe.fit_transform(y_train)
+    y_valid = ohe.fit_transform(y_valid)
 
 
     model =  MultiLayerPerceptron()
@@ -42,12 +47,14 @@ def main():
 
     model.fit(
         network,
-        data_train,
-        data_valid,
-        loss_func="binaryCrossentropy",
-        learning_rate=0.0001,
-        batch_size=8,
-        epochs=1300
+        X_train,
+        y_train,
+        X_valid,
+        y_valid,
+        loss_func=config["loss_function"],
+        learning_rate=config["learning_rate"],
+        batch_size=config["batch_size"],
+        epochs=config["epochs"]
     )
 
     model.save_model()
