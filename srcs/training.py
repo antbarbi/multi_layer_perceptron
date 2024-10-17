@@ -1,6 +1,6 @@
 from model import MultiLayerPerceptron, DenseLayer
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 import json
 
 
@@ -27,7 +27,10 @@ def main():
     data_train = scaler.fit_transform(data_train)
     
     input_shape = data_train.shape[1]
-    data_valid = data["type"]
+    data_valid = data[["type"]]
+
+    ohe = OneHotEncoder(sparse_output=False)
+    data_valid = ohe.fit_transform(data_valid)
 
 
     model =  MultiLayerPerceptron()
@@ -41,11 +44,14 @@ def main():
         network,
         data_train,
         data_valid,
-        loss="binaryCrossentropy",
-        learning_rate=0.00314,
+        loss_func="binaryCrossentropy",
+        learning_rate=0.0001,
         batch_size=8,
-        epochs=84
+        epochs=1300
     )
+
+    
+
 
 
 if __name__ == "__main__":
