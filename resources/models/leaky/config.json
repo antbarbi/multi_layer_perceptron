@@ -1,0 +1,19 @@
+{
+    "layers": [
+      {"units": 50, "activation": "leaky_relu"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 50, "activation": "leaky_relu", "initializer": "heUniform"},
+      {"units": 2, "activation": "softmax", "initializer": "xavierUniform"}      
+    ],
+    "learning_rate": 0.00001,
+    "batch_size": 8,
+    "epochs": 300,
+    "loss_function": "binaryCrossentropy"
+  }

@@ -55,7 +55,7 @@ class EarlyStoping:
         return False
 
 
-early_stopping = EarlyStoping(patience=10, min_delta=0)
+early_stopping = EarlyStoping(patience=20, min_delta=0)
 
 
 class MultiLayerPerceptron:

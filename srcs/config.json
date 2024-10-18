@@ -1,10 +1,16 @@
 {
     "layers": [
-      {"units": 24, "activation": "selu"},
-      {"units": 24, "activation": "selu", "initializer": "lecunNormal"},
-      {"units": 24, "activation": "selu", "initializer": "lecunNormal"},
-      {"units": 24, "activation": "selu", "initializer": "lecunNormal"},
-      {"units": 2, "activation": "softmax", "initializer": "xavierUniform"}
+      {"units": 50, "activation": "selu"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 2, "activation": "softmax", "initializer": "xavierUniform"}      
     ],
     "learning_rate": 0.0001,
     "batch_size": 8,
