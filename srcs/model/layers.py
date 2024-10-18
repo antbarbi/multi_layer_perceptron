@@ -5,12 +5,12 @@ def softmax(z):
         exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))
         return exp_z / np.sum(exp_z, axis=1, keepdims=True)
 
-
 ACTIVATIONS = {
     "sigmoid": lambda z: 1 / (1 + np.exp(-np.clip(z, -500, 500))),
     "softmax": softmax,
     "relu": lambda z: np.maximum(0, z),
-    "leaky_relu": lambda z, alpha=0.01: np.where(z > 0, z, alpha * z)
+    "leaky_relu": lambda z, alpha=0.01: np.where(z > 0, z, alpha * z),
+    "selu": lambda z, alpha=1.67326, scale=1.0507: scale * np.where(z > 0, z, alpha * (np.exp(z) - 1))
 }
 
 
@@ -22,9 +22,14 @@ def xavierUniform(input_dim, output_dim):
     limit = np.sqrt(6 / (input_dim + output_dim))
     return np.random.uniform(-limit, limit, (input_dim, output_dim))
 
+def lecunNormal(input_dim, output_dim):
+    stddev = np.sqrt(1 / input_dim)
+    return np.random.normal(0, stddev, (input_dim, output_dim))
+
 INITIALIZERS = {
     "heUniform": heUniform,
     "xavierUniform": xavierUniform,
+    "lecunNormal": lecunNormal, 
     "random": lambda z,x : np.random.randn(z, x) * 0.01
 }
 
