@@ -1,9 +1,9 @@
 {
     "layers": [
       {"units": 24, "activation": "sigmoid"},
-      {"units": 24, "activation": "sigmoid", "initializer": "heUniform"},
-      {"units": 24, "activation": "sigmoid", "initializer": "heUniform"},
-      {"units": 24, "activation": "sigmoid", "initializer": "heUniform"},
+      {"units": 24, "activation": "sigmoid", "initializer": "xavierUniform"},
+      {"units": 24, "activation": "sigmoid", "initializer": "xavierUniform"},
+      {"units": 24, "activation": "sigmoid", "initializer": "xavierUniform"},
       {"units": 2, "activation": "softmax", "initializer": "heUniform"}
     ],
     "learning_rate": 0.0001,

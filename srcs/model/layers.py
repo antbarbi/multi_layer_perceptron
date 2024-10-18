@@ -9,12 +9,28 @@ def softmax(z):
 ACTIVATIONS = {
     "sigmoid": lambda z: 1 / (1 + np.exp(-np.clip(z, -500, 500))),
     "softmax": softmax,
+    "relu": lambda z: np.maximum(0, z),
+    "leaky_relu": lambda z, alpha=0.01: np.where(z > 0, z, alpha * z)
 }
 
 
+def heUniform(input_dim, output_dim):
+    limit = np.sqrt(6 / input_dim)
+    return np.random.uniform(-limit, limit, (input_dim, output_dim))
+
+def xavierUniform(input_dim, output_dim):
+    limit = np.sqrt(6 / (input_dim + output_dim))
+    return np.random.uniform(-limit, limit, (input_dim, output_dim))
+
+INITIALIZERS = {
+    "heUniform": heUniform,
+    "xavierUniform": xavierUniform,
+    "random": lambda z,x : np.random.randn(z, x) * 0.01
+}
+
 
 class DenseLayer:
-    def __init__(self, num_of_neuron, activation: str, weights_initializer: str= None):
+    def __init__(self, num_of_neuron, activation: str, weights_initializer: str = None):
         self._num_of_neuron = num_of_neuron
         self._activation = activation
         self._weights_initializer = weights_initializer
@@ -28,11 +44,9 @@ class DenseLayer:
 
 
     def initialize(self, input_dim):
-        if self._weights_initializer == 'heUniform':
-            limit = np.sqrt(6 / input_dim)
-            self.weights = np.random.uniform(-limit, limit, (input_dim, self._num_of_neuron))
-        else:
-            self.weights = np.random.randn(input_dim, self._num_of_neuron) * 0.01
+        if self._weights_initializer not in INITIALIZERS:
+            self._weights_initializer = "random"
+        self.weights = INITIALIZERS[self._weights_initializer](input_dim, self._num_of_neuron)
         self.biases = np.zeros((1, self._num_of_neuron))
     
 

@@ -14,8 +14,10 @@ def create_layer(config: dict):
 
 
 def main():
-    data = pd.read_csv("../Training_data.csv")
-    valid = pd.read_csv("../Validation_data.csv")
+    # data = pd.read_csv("../Training_data.csv")
+    # valid = pd.read_csv("../Validation_data.csv")
+    data = pd.read_csv("../data_training.csv")
+    valid = pd.read_csv("../data_test.csv")
     input_shape = data.shape[1]
     
     #Preprocess

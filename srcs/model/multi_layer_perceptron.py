@@ -7,9 +7,6 @@ from IPython.display import clear_output
 from dataclasses import dataclass, field
 
 
-
-
-
 def binaryCrossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
     
@@ -58,15 +55,14 @@ class EarlyStoping:
         return False
 
 
-early_stopping = EarlyStoping()
+early_stopping = EarlyStoping(patience=10, min_delta=0)
 
 
 class MultiLayerPerceptron:
     def __init__(self):
         self._network = []
         self.int_plot = InteractivePlot()
-        self.patience = 10
-
+        self.loss = L
 
     def createNetwork(self, layers: list[DenseLayer], input_shape: int) -> list[DenseLayer]:
         network = layers
