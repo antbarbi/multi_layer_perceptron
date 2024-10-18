@@ -2,6 +2,8 @@ from .layers import DenseLayer
 import pandas as pd
 import numpy as np
 import json
+import matplotlib.pyplot as plt
+from IPython.display import clear_output
 
 
 def binaryCrossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -10,6 +12,11 @@ def binaryCrossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     # Compute binary cross-entropy loss
     loss = -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
     return loss
+
+
+def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    predictions = (y_pred > 0.5).astype(int)
+    return np.mean(predictions == y_true)
 
 
 L = {
@@ -57,14 +64,46 @@ class MultiLayerPerceptron:
 
         assert len(network) > 3
 
+        train_losses = []
+        val_losses = []
+        train_accuracies = []
+        val_accuracies = []
+
+        plt.ion()
+        fix, (ax, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+        
+        # Subplot for loss
+        line1, = ax.plot(train_losses, label="Training Loss")
+        line2, = ax.plot(val_losses, label="Validation Loss")
+        ax.legend()
+        ax.set_xlabel("Epochs")
+        ax.set_ylabel("Loss")
+        ax.set_title("Loss by epochs")
+
+        # Subplot for accuracy
+        line3, = ax2.plot(train_accuracies, label="Training Accuracy")
+        line4, = ax2.plot(val_accuracies, label="Validation Accuracy")
+        ax2.legend()
+        ax2.set_xlabel("Epochs")
+        ax2.set_ylabel("Accuracy")
+        ax2.set_title("Accuracy by epochs")
+
+
+
         for epoch in range(epochs):
             forward_output: pd.DataFrame = X_train
             for layer in network:
                 forward_output = layer.forward(forward_output)
 
             assert loss_func in L
+            
             # Calculate Loss with Loss Function
             loss = L[loss_func](y_train, forward_output)
+            train_losses.append(loss)
+
+            # Calculate training accuracy
+            train_acc = accuracy(y_train, forward_output)
+            train_accuracies.append(train_acc)
 
             delta = forward_output - y_train
 
@@ -75,11 +114,42 @@ class MultiLayerPerceptron:
             for layer in network:
                 val_output = layer.forward(val_output)
             
+            # Calculate validation loss
             val_loss = L[loss_func](y_valid, val_output)
+            val_losses.append(val_loss)
+
+            # Calculate validation accuracy
+            val_acc = accuracy(y_valid, val_output)
+            val_accuracies.append(val_acc)
             
-            print(f"Epoch {epoch + 1}/{epochs:<3} | Loss: {loss:<10.4f} | Val-Loss: {val_loss:<10.4f}")
+            print(
+                f"Epoch {epoch + 1}/{epochs:<3} | Loss: {loss:<10.4f} | Val-Loss: {val_loss:<10.4f} | "
+                f"Train-Acc: {train_acc:<10.4f} | Val-Acc: {val_acc:<10.4f}"
+                )
+
+            # Update interactive plot for loss
+            line1.set_ydata(train_losses)
+            line1.set_xdata(range(len(train_losses)))
+            line2.set_ydata(val_losses)
+            line2.set_xdata(range(len(val_losses)))
+            ax.relim()
+            ax.autoscale_view()
+            
+            # Update interactive plot for accuracy
+            line3.set_ydata(train_accuracies)
+            line3.set_xdata(range(len(train_accuracies)))
+            line4.set_ydata(val_accuracies)
+            line4.set_xdata(range(len(val_accuracies)))
+            ax2.relim()
+            ax2.autoscale_view()
+
+            clear_output(wait=True)
+            plt.draw()
+            plt.pause(0.01)
 
         self._network = network
+        plt.ioff()
+        plt.show()
 
 
     def save_model(self):

@@ -6,8 +6,8 @@
       {"units": 24, "activation": "sigmoid", "initializer": "heUniform"},
       {"units": 2, "activation": "softmax", "initializer": "heUniform"}
     ],
-    "learning_rate": 0.00314,
+    "learning_rate": 0.0001,
     "batch_size": 8,
-    "epochs": 84,
+    "epochs": 300,
     "loss_function": "binaryCrossentropy"
   }
