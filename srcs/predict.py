@@ -10,7 +10,7 @@ def main():
 
     model.load_model("model.json")
 
-    data = pd.read_csv("../Validation_data (3).csv")
+    data = pd.read_csv("../Validation_data.csv")
     input_shape = data.shape[1]
     output_shape = 2
 

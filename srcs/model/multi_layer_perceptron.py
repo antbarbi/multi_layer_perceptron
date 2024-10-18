@@ -6,12 +6,7 @@ import matplotlib.pyplot as plt
 from IPython.display import clear_output
 from dataclasses import dataclass, field
 
-@dataclass
-class InteractivePlot:
-    train_losses: list = field(default_factory=list)
-    val_losses: list = field(default_factory=list)
-    train_accuracies: list = field(default_factory=list)
-    val_accuracies: list = field(default_factory=list)
+
 
 
 
@@ -32,11 +27,45 @@ L = {
     "binaryCrossentropy": binaryCrossentropy,
 }
 
+@dataclass
+class InteractivePlot:
+    train_losses: list = field(default_factory=list)
+    val_losses: list = field(default_factory=list)
+    train_accuracies: list = field(default_factory=list)
+    val_accuracies: list = field(default_factory=list)
+
+
+class EarlyStoping:
+    def __init__(self, patience=5, min_delta=0):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.best_loss = np.inf
+        self.counter = 0
+        self.best_weights = None
+        self.early_stop = False
+
+    def __call__(self, val_loss, model, network):
+        if val_loss < self.best_loss - self.min_delta:
+            self.best_loss = val_loss
+            self.counter = 0
+            self.best_weights = [layer.weights.copy() for layer in network]
+        else:
+            self.counter += 1
+            if self.counter >= self.patience:
+                self.early_stop = True
+                print(f"Early stopping after {self.counter} epochs with patience {self.patience}")
+                return True
+        return False
+
+
+early_stopping = EarlyStoping()
+
 
 class MultiLayerPerceptron:
     def __init__(self):
         self._network = []
         self.int_plot = InteractivePlot()
+        self.patience = 10
 
 
     def createNetwork(self, layers: list[DenseLayer], input_shape: int) -> list[DenseLayer]:
@@ -60,49 +89,6 @@ class MultiLayerPerceptron:
         return output
 
 
-    def setup_figer(self):
-        plt.ion()
-        fix, (ax, ax2) = plt.subplots(2, 1, figsize=(10, 8))
-        
-        # Subplot for loss
-        line1, = ax.plot(self.int_plot.train_losses, label="Training Loss")
-        line2, = ax.plot(self.int_plot.val_losses, label="Validation Loss")
-        ax.legend()
-        ax.set_xlabel("Epochs")
-        ax.set_ylabel("Loss")
-        ax.set_title("Loss by epochs")
-
-        # Subplot for accuracy
-        line3, = ax2.plot(self.int_plot.train_accuracies, label="Training Accuracy")
-        line4, = ax2.plot(self.int_plot.val_accuracies, label="Validation Accuracy")
-        ax2.legend()
-        ax2.set_xlabel("Epochs")
-        ax2.set_ylabel("Accuracy")
-        ax2.set_title("Accuracy by epochs")
-        
-        return ax, ax2, line1, line2, line3, line4
-
-    def update_figer(self, ax, ax2, line1, line2, line3, line4):
-        # Update interactive plot for loss
-        line1.set_ydata(self.int_plot.train_losses)
-        line1.set_xdata(range(len(self.int_plot.train_losses)))
-        line2.set_ydata(self.int_plot.val_losses)
-        line2.set_xdata(range(len(self.int_plot.val_losses)))
-        ax.relim()
-        ax.autoscale_view()
-        
-        # Update interactive plot for accuracy
-        line3.set_ydata(self.int_plot.train_accuracies)
-        line3.set_xdata(range(len(self.int_plot.train_accuracies)))
-        line4.set_ydata(self.int_plot.val_accuracies)
-        line4.set_xdata(range(len(self.int_plot.val_accuracies)))
-        ax2.relim()
-        ax2.autoscale_view()
-        clear_output(wait=True)
-        plt.draw()
-        plt.pause(0.01)
-
-    
     def fit(
             self,
             network: list[DenseLayer],
@@ -156,13 +142,61 @@ class MultiLayerPerceptron:
                 f"Epoch {epoch + 1}/{epochs:<3} | Loss: {loss:<10.4f} | Val-Loss: {val_loss:<10.4f} | "
                 f"Train-Acc: {train_acc:<10.4f} | Val-Acc: {val_acc:<10.4f}"
                 )
-            
+
             self.update_figer(*fig_params)
+
+            # Early Stopping
+            if early_stopping and early_stopping(val_loss, self, network):
+                for i, layer in enumerate(network):
+                    layer.weights = early_stopping.best_weights[i]
+                break
 
         self._network = network
         plt.ioff()
         plt.show()
 
+
+    def setup_figer(self):
+        plt.ion()
+        fix, (ax, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+        
+        # Subplot for loss
+        line1, = ax.plot(self.int_plot.train_losses, label="Training Loss")
+        line2, = ax.plot(self.int_plot.val_losses, label="Validation Loss")
+        ax.legend()
+        ax.set_xlabel("Epochs")
+        ax.set_ylabel("Loss")
+        ax.set_title("Loss by epochs")
+
+        # Subplot for accuracy
+        line3, = ax2.plot(self.int_plot.train_accuracies, label="Training Accuracy")
+        line4, = ax2.plot(self.int_plot.val_accuracies, label="Validation Accuracy")
+        ax2.legend()
+        ax2.set_xlabel("Epochs")
+        ax2.set_ylabel("Accuracy")
+        ax2.set_title("Accuracy by epochs")
+        
+        return ax, ax2, line1, line2, line3, line4
+
+    def update_figer(self, ax, ax2, line1, line2, line3, line4):
+        # Update interactive plot for loss
+        line1.set_ydata(self.int_plot.train_losses)
+        line1.set_xdata(range(len(self.int_plot.train_losses)))
+        line2.set_ydata(self.int_plot.val_losses)
+        line2.set_xdata(range(len(self.int_plot.val_losses)))
+        ax.relim()
+        ax.autoscale_view()
+        
+        # Update interactive plot for accuracy
+        line3.set_ydata(self.int_plot.train_accuracies)
+        line3.set_xdata(range(len(self.int_plot.train_accuracies)))
+        line4.set_ydata(self.int_plot.val_accuracies)
+        line4.set_xdata(range(len(self.int_plot.val_accuracies)))
+        ax2.relim()
+        ax2.autoscale_view()
+        clear_output(wait=True)
+        plt.draw()
+        plt.pause(0.01)
 
     def save_model(self):
         model = {}
