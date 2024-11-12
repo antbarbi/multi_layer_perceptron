@@ -1,6 +1,6 @@
 from model import MultiLayerPerceptron, DenseLayer
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, MinMaxScaler
 import json
 
 
@@ -8,7 +8,9 @@ def create_layer(config: dict):
     layer = DenseLayer(
         config["units"],
         config["activation"],
-        config.get("initializer", None)
+        config.get("initializer", None),
+        config.get("use_momentum", False),
+        config.get("momentum", 0.9)
     )
     return layer
 
@@ -43,6 +45,7 @@ def main():
     model =  MultiLayerPerceptron()
 
     with open("config.json", "r") as file:
+    # with open("../resources/models/leaky/config.json", "r") as file:
         config = json.load(file)
 
     network = model.createNetwork([create_layer(layer) for layer in config["layers"]], 31)
