@@ -1,0 +1,19 @@
+{
+    "layers": [
+      {"units": 50, "activation": "selu"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 50, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 2, "activation": "softmax", "initializer": "xavierUniform"}      
+    ],
+    "learning_rate": 0.0001,
+    "batch_size": 8,
+    "epochs": 300,
+    "loss_function": "binaryCrossentropy"
+  }
