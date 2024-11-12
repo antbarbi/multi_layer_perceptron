@@ -35,7 +35,7 @@ INITIALIZERS = {
 
 
 class DenseLayer:
-    def __init__(self, num_of_neuron, activation: str, weights_initializer: str = None):
+    def __init__(self, num_of_neuron, activation: str, weights_initializer: str = None, momentum: float = 0.9):
         self._num_of_neuron = num_of_neuron
         self._activation = activation
         self._weights_initializer = weights_initializer
@@ -47,12 +47,20 @@ class DenseLayer:
         self.d_weights = None
         self.d_biases = None
 
+        # Momentum parameters
+        self.momentum = momentum
+        self.velocity_w = None
+        self.velocity_b = None
+
 
     def initialize(self, input_dim):
         if self._weights_initializer not in INITIALIZERS:
             self._weights_initializer = "random"
         self.weights = INITIALIZERS[self._weights_initializer](input_dim, self._num_of_neuron)
         self.biases = np.zeros((1, self._num_of_neuron))
+
+        self.velocity_w = np.zeros_like(self.weights)
+        self.velocity_b = np.zeros_like(self.biases)
     
 
     def forward(self, input_data):
@@ -69,7 +77,14 @@ class DenseLayer:
         self.d_weights = np.dot(self.in_data.T, delta)
         self.d_biases = np.sum(delta, axis=0, keepdims=True)
 
-        self.weights -= learning_rate * self.d_weights
-        self.biases -= learning_rate * self.d_biases
+        # Update velocities
+        self.velocity_w = self.momentum * self.velocity_w - learning_rate * self.d_weights
+        self.velocity_b = self.momentum * self.velocity_b - learning_rate * self.d_biases
 
-        return np.dot(delta, self.weights.T)
+        # Update weights and biases
+        self.weights += self.velocity_w
+        self.biases += self.velocity_b
+
+        # Compute delta for the previous layer
+        prev_delta = np.dot(delta, self.weights.T)
+        return prev_delta
