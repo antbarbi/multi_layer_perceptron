@@ -26,12 +26,16 @@ def parser() -> argparse.Namespace:
 #TODO add args for model file
 #TODO maybe separate plotting metrics
 
-def main(*files):
+def main(*metric_files, model_file: str = None, data_test: str = None) -> None:
+    if not model_file or not data_test:
+        print("Exiting: Missing model file or test data file")
+        exit(1)
+    
     model = MultiLayerPerceptron()
 
-    model.load_model("model.json")
+    model.load_model(model_file)
 
-    data = pd.read_csv("data_test.csv")
+    data = pd.read_csv(data_test)
     input_shape = data.shape[1]
 
     # Preprocess
@@ -60,7 +64,7 @@ def main(*files):
     loss = model.loss["binaryCrossentropy"](y, pred)
     print(f"Accuracy: {accuracy}, Loss: {loss}")
 
-    model.load_metrics(*files)
+    model.load_metrics(*metric_files)
     model.plot_metrics()
 
 

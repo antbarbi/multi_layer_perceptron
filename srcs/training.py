@@ -31,8 +31,6 @@ def create_layer(config: dict):
 
 
 def main(training_dataset, validation_dataset, config_file, output_file):
-    # data = pd.read_csv("../Training_data.csv")
-    # valid = pd.read_csv("../Validation_data.csv")
     data = pd.read_csv(training_dataset)
     valid = pd.read_csv(validation_dataset)
     input_shape = data.shape[1]

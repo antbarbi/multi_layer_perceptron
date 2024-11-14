@@ -31,7 +31,8 @@ def phase_selector() -> None:
         nargs='+',  # Accept one or more filenames
         help="Configuration files for the prediction phase"
     )
-
+    parser_prediction.add_argument("-m", "--model_file", type=str, help="The model file for the prediction phase")
+    parser_prediction.add_argument("-d", "--data_test", type=str, help="The test data file for the prediction phase")
     return parser.parse_args()
 
 
@@ -46,5 +47,5 @@ if __name__ == "__main__":
     if args.phase == "training":
         training.main(args.t, args.v, args.c, args.o)
     if args.phase == "prediction":
-        predict.main(*args.input_filenames)
+        predict.main(*args.input_filenames, args.model_file, args.data_test)
 
