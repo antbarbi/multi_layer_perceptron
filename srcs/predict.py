@@ -1,18 +1,38 @@
 import pandas as pd
 import numpy as np
-from model import MultiLayerPerceptron
+from .model.multi_layer_perceptron import MultiLayerPerceptron
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import accuracy_score
+import argparse
 
 
-def main():
+def parser() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--input_filenames", "-i",
+        type=str,
+        nargs='+',  # Accept one or more filenames
+        help="Configuration files for the prediction phase"
+    )
+    
+    ##TODO add check for file format
+
+    args = parser.parse_args()
+
+    return args.input_filenames
+
+
+#TODO add check for file format
+#TODO add args for model file
+#TODO maybe separate plotting metrics
+
+def main(*files):
     model = MultiLayerPerceptron()
 
     model.load_model("model.json")
 
-    data = pd.read_csv("../data_test.csv")
+    data = pd.read_csv("data_test.csv")
     input_shape = data.shape[1]
-    output_shape = 2
 
     # Preprocess
     column_names = [f'col{i+1}' if i != 1 else "type" for i in range(input_shape)]
@@ -40,6 +60,10 @@ def main():
     loss = model.loss["binaryCrossentropy"](y, pred)
     print(f"Accuracy: {accuracy}, Loss: {loss}")
 
+    model.load_metrics(*files)
+    model.plot_metrics()
+
 
 if __name__ == "__main__":
-    main()
+    args = parser()
+    main(*args)

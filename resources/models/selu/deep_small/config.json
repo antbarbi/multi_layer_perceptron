@@ -4,6 +4,12 @@
       {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
       {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
       {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
+      {"units": 16, "activation": "selu", "initializer": "lecunNormal"},
       {"units": 2, "activation": "softmax", "initializer": "xavierUniform"}      
     ],
     "learning_rate": 0.00004,

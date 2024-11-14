@@ -64,6 +64,8 @@ class MultiLayerPerceptron:
         self.int_plot = InteractivePlot()
         self.loss = L
 
+        self.multi_plots: list[InteractivePlot] = []
+
     def createNetwork(self, layers: list[DenseLayer], input_shape: int) -> list[DenseLayer]:
         network = layers
         for i, layer in enumerate(network):
@@ -206,6 +208,62 @@ class MultiLayerPerceptron:
         ]
         with open("model.json", "w") as file:  # Open file in text mode
             json.dump(model, file)
+
+    def save_metrics(self, file_name: str = "metrics.json"):
+        metrics = {
+            "train_losses": self.int_plot.train_losses,
+            "val_losses": self.int_plot.val_losses,
+            "train_accuracies": self.int_plot.train_accuracies,
+            "val_accuracies": self.int_plot.val_accuracies
+        }
+        with open(file_name, "w") as file:
+            json.dump(metrics, file, indent=4)
+        print(f"Training metrics saved to {file_name}")
+
+
+    def load_metrics(self, *file_names: tuple[str]):
+        
+        for i, file_name in enumerate(file_names):
+            with open(file_name, "r") as file:
+                metrics = json.load(file)
+            self.multi_plots.append(InteractivePlot())
+            self.multi_plots[i].train_losses = metrics.get("train_losses", [])
+            self.multi_plots[i].val_losses = metrics.get("val_losses", [])
+            self.multi_plots[i].val_accuracies = metrics.get("train_accuracies", [])
+            self.multi_plots[i].val_accuracies = metrics.get("val_accuracies", [])
+
+            print(f"Training metrics loaded from {file_name}")
+
+
+    def plot_metrics(self):
+        plt.figure(figsize=(12, 5))
+        rows = len(self.multi_plots)
+        print(type(self.multi_plots[0]))
+
+        for i, plot in enumerate(self.multi_plots):
+            loss_subplot = 2 * i + 1      # Odd indices for Loss
+            acc_subplot = 2 * i + 2 
+            plt.subplot(rows, 2, loss_subplot)
+            plt.plot(plot.train_losses, label="Training Loss")
+            plt.plot(plot.val_losses, label="Validation Loss")
+            plt.xlabel("Epochs")
+            plt.ylabel("Loss")
+            plt.title("Loss by Epochs")
+            plt.legend()
+            plt.grid(True)
+
+            # Plot Accuracy
+            plt.subplot(rows, 2, acc_subplot)
+            plt.plot(plot.train_accuracies, label="Training Accuracy")
+            plt.plot(plot.val_accuracies, label="Validation Accuracy")
+            plt.xlabel("Epochs")
+            plt.ylabel("Accuracy")
+            plt.title("Accuracy by Epochs")
+            plt.legend()
+            plt.grid(True)
+
+        plt.tight_layout()
+        plt.show()
 
 
     def load_model(self, file_name: str):
