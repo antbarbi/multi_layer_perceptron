@@ -4,32 +4,32 @@ from .model.multi_layer_perceptron import MultiLayerPerceptron
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import accuracy_score
 import argparse
+import os
 
 
 def parser() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--input_filenames", "-i",
-        type=str,
-        nargs='+',  # Accept one or more filenames
-        help="Configuration files for the prediction phase"
-    )
-    
-    ##TODO add check for file format
-
-    args = parser.parse_args()
+    parser.add_argument("-m", "--model_file", type=str, required=True,)
+    parser.add_argument("-d", "--data_test", type=str, required=True,)
 
     return args.input_filenames
 
 
-#TODO add check for file format
-#TODO add args for model file
-#TODO maybe separate plotting metrics
+def check_args(model_file: str, data_test: str):
+    if not os.path.exists(model_file):
+        raise FileNotFoundError(f"File {model_file} not found")
+    if not model_file.endswith(".json"):
+        raise ValueError("Only .json files are accepted for model")
+    
+    if not os.path.exists(data_test):
+        raise FileNotFoundError(f"File {data_test} not found")
+    if not data_test.endswith(".csv"):
+        raise ValueError("Only .csv files are accepted for data_test")
+
 
 def main(*metric_files, model_file: str = None, data_test: str = None) -> None:
-    if not model_file or not data_test:
-        print("Exiting: Missing model file or test data file")
-        exit(1)
+
+    check_args(*metric_files, model_file=model_file, data_test=data_test)
     
     model = MultiLayerPerceptron()
 
@@ -64,8 +64,7 @@ def main(*metric_files, model_file: str = None, data_test: str = None) -> None:
     loss = model.loss["binaryCrossentropy"](y, pred)
     print(f"Accuracy: {accuracy}, Loss: {loss}")
 
-    model.load_metrics(*metric_files)
-    model.plot_metrics()
+
 
 
 if __name__ == "__main__":

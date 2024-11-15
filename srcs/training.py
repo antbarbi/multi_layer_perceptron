@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, MinMaxScaler
 import json
 import argparse
+import os
 
 
 def parser() -> argparse.Namespace:
@@ -15,9 +16,25 @@ def parser() -> argparse.Namespace:
 
     args = parser.parse_args()
 
-    ##TODO add check for file format
-
     return args.config_filename, args.training_file, args.validation_file, args.output_filename
+
+
+def check_args(config_file: str, training_dataset: str, validation_dataset: str, output_file: str) -> None:
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"File {config_file} not found")
+    if not config_file.endswith(".json"):
+        raise ValueError("Only .json files are accepted for config")
+
+    if not os.path.exists(training_dataset):
+        raise FileNotFoundError(f"File {training_dataset} not found")
+    if not training_dataset.endswith(".csv"):
+        raise ValueError("Only .csv files are accepted for training_dataset")
+
+    if not os.path.exists(validation_dataset):
+        raise FileNotFoundError(f"File {validation_dataset} not found")
+    if not validation_dataset.endswith(".csv"):
+        raise ValueError("Only .csv files are accepted for validation_dataset")
+
 
 def create_layer(config: dict):
     layer = DenseLayer(
@@ -31,6 +48,8 @@ def create_layer(config: dict):
 
 
 def main(training_dataset, validation_dataset, config_file, output_file):
+    check_args(config_file, training_dataset, validation_dataset, output_file)
+    
     data = pd.read_csv(training_dataset)
     valid = pd.read_csv(validation_dataset)
     input_shape = data.shape[1]

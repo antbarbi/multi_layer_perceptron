@@ -13,18 +13,27 @@ def parser() -> argparse.Namespace:
     parser.add_argument('-s', "--seed", type=int, help="Seed for the random split", default=None)
 
     args = parser.parse_args()
-
-    if not args.file:
-        print("Exiting")
-        exit(1)
-    elif ".csv" != args.file[-4:]:
-        print("Exiting: Wrong Format")
-        exit(1)
     
     return args.file, args.output_dir, args.seed
 
 
+def check_args(dataset: str, output_dir: str, random_seed: int) -> None:
+    if not os.path.exists(dataset):
+        raise FileNotFoundError(f"File {dataset} not found")
+    if not dataset.endswith(".csv"):
+        raise ValueError("Only .csv files are accepted for dataset")
+    
+    if not os.path.exists(output_dir):
+        raise FileNotFoundError(f"Directory {output_dir} not found")
+
+    if random_seed and not isinstance(random_seed, int):
+        raise ValueError("Seed must be an integer")
+
+
 def main(dataset: str, output_dir: str, random_seed: int = None) -> None:
+    
+    check_args(dataset, output_dir, random_seed)
+    
     data = pd.read_csv(dataset)
 
     train_ratio = 0.8

@@ -238,7 +238,6 @@ class MultiLayerPerceptron:
     def plot_metrics(self):
         plt.figure(figsize=(12, 5))
         rows = len(self.multi_plots)
-        print(type(self.multi_plots[0]))
 
         for i, plot in enumerate(self.multi_plots):
             loss_subplot = 2 * i + 1      # Odd indices for Loss
