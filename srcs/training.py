@@ -34,6 +34,9 @@ def check_args(config_file: str, training_dataset: str, validation_dataset: str,
         raise FileNotFoundError(f"File {validation_dataset} not found")
     if not validation_dataset.endswith(".csv"):
         raise ValueError("Only .csv files are accepted for validation_dataset")
+    
+    if ".json" not in output_file:
+        raise ValueError("Output file should be a .json")
 
 
 def create_layer(config: dict):

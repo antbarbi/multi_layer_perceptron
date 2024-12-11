@@ -26,6 +26,7 @@ L = {
 
 @dataclass
 class InteractivePlot:
+    filename: str = field(default_factory=str)
     train_losses: list = field(default_factory=list)
     val_losses: list = field(default_factory=list)
     train_accuracies: list = field(default_factory=list)
@@ -196,6 +197,7 @@ class MultiLayerPerceptron:
         plt.draw()
         plt.pause(0.01)
 
+
     def save_model(self):
         model = {}
         model["layers"] = [
@@ -206,8 +208,9 @@ class MultiLayerPerceptron:
                 "biases": net.biases.tolist()
             } for net in self._network
         ]
-        with open("model.json", "w") as file:  # Open file in text mode
+        with open("model.json", "w") as file:
             json.dump(model, file)
+
 
     def save_metrics(self, file_name: str = "metrics.json"):
         metrics = {
@@ -227,6 +230,7 @@ class MultiLayerPerceptron:
             with open(file_name, "r") as file:
                 metrics = json.load(file)
             self.multi_plots.append(InteractivePlot())
+            self.multi_plots[i].filename = file_name
             self.multi_plots[i].train_losses = metrics.get("train_losses", [])
             self.multi_plots[i].val_losses = metrics.get("val_losses", [])
             self.multi_plots[i].val_accuracies = metrics.get("train_accuracies", [])
@@ -247,7 +251,7 @@ class MultiLayerPerceptron:
             plt.plot(plot.val_losses, label="Validation Loss")
             plt.xlabel("Epochs")
             plt.ylabel("Loss")
-            plt.title("Loss by Epochs")
+            plt.title(f"Loss by Epochs - {plot.filename}")
             plt.legend()
             plt.grid(True)
 
@@ -257,7 +261,7 @@ class MultiLayerPerceptron:
             plt.plot(plot.val_accuracies, label="Validation Accuracy")
             plt.xlabel("Epochs")
             plt.ylabel("Accuracy")
-            plt.title("Accuracy by Epochs")
+            plt.title(f"Accuracy by Epochs - {plot.filename}")
             plt.legend()
             plt.grid(True)
 
