@@ -42,7 +42,7 @@ class EarlyStoping:
         self.best_weights = None
         self.early_stop = False
 
-    def __call__(self, val_loss, model, network):
+    def __call__(self, val_loss, network):
         if val_loss < self.best_loss - self.min_delta:
             self.best_loss = val_loss
             self.counter = 0
@@ -145,7 +145,7 @@ class MultiLayerPerceptron:
             self.update_figer(*fig_params)
 
             # Early Stopping
-            if early_stopping and early_stopping(val_loss, self, network):
+            if early_stopping and early_stopping(val_loss, network):
                 for i, layer in enumerate(network):
                     layer.weights = early_stopping.best_weights[i]
                 break
@@ -176,6 +176,7 @@ class MultiLayerPerceptron:
         ax2.set_title("Accuracy by epochs")
         
         return ax, ax2, line1, line2, line3, line4
+
 
     def update_figer(self, ax, ax2, line1, line2, line3, line4):
         # Update interactive plot for loss
@@ -278,6 +279,4 @@ class MultiLayerPerceptron:
             init_layer.weights = np.array(layer["weights"])
             init_layer.biases = np.array(layer["biases"])
             self._network.append(init_layer)
-
-        
 

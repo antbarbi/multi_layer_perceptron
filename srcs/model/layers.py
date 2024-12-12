@@ -13,7 +13,6 @@ ACTIVATIONS = {
     "selu": lambda z, alpha=1.67326, scale=1.0507: scale * np.where(z > 0, z, alpha * (np.exp(z) - 1))
 }
 
-
 def heUniform(input_dim, output_dim):
     limit = np.sqrt(6 / input_dim)
     return np.random.uniform(-limit, limit, (input_dim, output_dim))
