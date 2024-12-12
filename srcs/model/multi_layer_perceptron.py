@@ -101,7 +101,7 @@ class MultiLayerPerceptron:
             epochs: int
         ) -> None:
 
-        assert len(network) > 3
+        assert len(network) > 2 # At least 2 hidden layers
 
         fig_params = self.setup_figure()
 
