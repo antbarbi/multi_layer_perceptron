@@ -103,7 +103,7 @@ class MultiLayerPerceptron:
 
         assert len(network) > 3
 
-        fig_params = self.setup_figer()
+        fig_params = self.setup_figure()
 
         for epoch in range(epochs):
             forward_output: pd.DataFrame = X_train
@@ -142,7 +142,7 @@ class MultiLayerPerceptron:
                 f"Train-Acc: {train_acc:<10.4f} | Val-Acc: {val_acc:<10.4f}"
                 )
 
-            self.update_figer(*fig_params)
+            self.update_figure(*fig_params)
 
             # Early Stopping
             if early_stopping and early_stopping(val_loss, network):
@@ -155,7 +155,7 @@ class MultiLayerPerceptron:
         plt.show()
 
 
-    def setup_figer(self):
+    def setup_figure(self):
         plt.ion()
         fix, (ax, ax2) = plt.subplots(2, 1, figsize=(10, 8))
         
@@ -178,7 +178,7 @@ class MultiLayerPerceptron:
         return ax, ax2, line1, line2, line3, line4
 
 
-    def update_figer(self, ax, ax2, line1, line2, line3, line4):
+    def update_figure(self, ax, ax2, line1, line2, line3, line4):
         # Update interactive plot for loss
         line1.set_ydata(self.int_plot.train_losses)
         line1.set_xdata(range(len(self.int_plot.train_losses)))
