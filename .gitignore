@@ -1,4 +1,4 @@
-*.csv
+/*.csv
 /*/*/__pycache__/
 venv
-*.json
+/*.json
