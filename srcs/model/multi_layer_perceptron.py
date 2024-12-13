@@ -5,6 +5,7 @@ import json
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 from dataclasses import dataclass, field
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 
 def binaryCrossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -15,22 +16,67 @@ def binaryCrossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return loss
 
 
+L = {
+    "binaryCrossentropy": binaryCrossentropy,
+}
+
+
 def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     predictions = (y_pred > 0.5).astype(int)
     return np.mean(predictions == y_true)
 
 
-L = {
-    "binaryCrossentropy": binaryCrossentropy,
-}
+def precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    y_pred_binary = (y_pred > 0.5).astype(int)
+    true_positives = np.sum((y_pred_binary == 1) & (y_true == 1))
+    predicted_positives = np.sum(y_pred_binary == 1)
+    if predicted_positives == 0:
+        return 0.0
+    return true_positives / predicted_positives
+
+
+def recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    y_pred_binary = (y_pred > 0.5).astype(int)
+    true_positives = np.sum((y_pred_binary == 1) & (y_true == 1))
+    actual_positives = np.sum(y_true == 1)
+    if actual_positives == 0:
+        return 0.0
+    return true_positives / actual_positives
+
+
+# def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+#     prec = precision(y_true, y_pred)
+#     rec = recall(y_true, y_pred)
+#     if (prec + rec) == 0:
+#         return 0.0
+#     return 2 * (prec * rec) / (prec + rec)
+
+
+def metrics(y_true: np.ndarray, y_pred: np.ndarray) -> str:
+    # acc = accuracy(y_true, y_pred)
+    predictions = (y_pred > 0.5).astype(int)
+    prec = precision_score(y_true, predictions, average="macro", zero_division=0)
+    rec = recall_score(y_true, predictions, average="macro", zero_division=0)
+    score = f1_score(y_true, predictions, average="macro", zero_division=0)
+
+    print(f"Train-precision: {prec:<10.4f} | train_recall: {rec:<10.4f} | train_f1_score: {score:<10.4f} ")
+    
 
 @dataclass
 class InteractivePlot:
     filename: str = field(default_factory=str)
+    
     train_losses: list = field(default_factory=list)
-    val_losses: list = field(default_factory=list)
     train_accuracies: list = field(default_factory=list)
+    train_precision: list = field(default_factory=list)
+    train_recall: list = field(default_factory=list)
+    train_f1_score: list = field(default_factory=list)
+    
+    val_losses: list = field(default_factory=list)
     val_accuracies: list = field(default_factory=list)
+    val_precision: list = field(default_factory=list)
+    val_recall: list = field(default_factory=list)
+    val_f1_score: list = field(default_factory=list)
 
 
 class EarlyStoping:
@@ -106,41 +152,57 @@ class MultiLayerPerceptron:
         fig_params = self.setup_figure()
 
         for epoch in range(epochs):
+            assert loss_func in L
+            
+            ## Training Set   
+            # Feed Forward         
             forward_output: pd.DataFrame = X_train
             for layer in network:
                 forward_output = layer.forward(forward_output)
 
-            assert loss_func in L
-            
-            # Calculate Loss with Loss Function
+            # Calculate metrics
             loss = L[loss_func](y_train, forward_output)
-            self.int_plot.train_losses.append(loss)
-
-            # Calculate training accuracy
             train_acc = accuracy(y_train, forward_output)
+            train_precision = precision_score(y_train, forward_output, average="macro", zero_division=0)
+            train_recall = recall_score(y_train, forward_output, average="macro", zero_division=0)
+            train_f1_score = f1_score(y_train, forward_output, average="macro", zero_division=0)
+            
+            self.int_plot.train_losses.append(loss)
             self.int_plot.train_accuracies.append(train_acc)
+            self.int_plot.train_precision.append(train_precision)
+            self.int_plot.train_recall.append(train_recall)
+            self.int_plot.train_f1_score.append(train_f1_score)
 
+            # Backpropagation
             delta = forward_output - y_train
-
             for layer in reversed(network):
                 delta = layer.backward(delta, learning_rate)
 
-            val_output = X_valid
+
+            ## Validation Set
+            # Inference
+            val_output: pd.DataFrame = X_valid
             for layer in network:
                 val_output = layer.forward(val_output)
-            
-            # Calculate validation loss
-            val_loss = L[loss_func](y_valid, val_output)
-            self.int_plot.val_losses.append(val_loss)
 
-            # Calculate validation accuracy
+            # Calculate metrics
+            val_loss = L[loss_func](y_valid, val_output)
             val_acc = accuracy(y_valid, val_output)
+            val_precision = precision_score(y_train, forward_output, average="macro", zero_division=0)
+            val_recall = recall_score(y_train, forward_output, average="macro", zero_division=0)
+            val_f1_score = f1_score(y_train, forward_output, average="macro", zero_division=0)
+
+
             self.int_plot.val_accuracies.append(val_acc)
-            
+            self.int_plot.val_losses.append(val_loss)
+            self.int_plot.val_precision.append(val_precision)
+            self.int_plot.val_recall.append(val_recall)
+            self.int_plot.val_f1_score.append(val_f1_score)
+
             print(
                 f"Epoch {epoch + 1}/{epochs:<3} | Loss: {loss:<10.4f} | Val-Loss: {val_loss:<10.4f} | "
                 f"Train-Acc: {train_acc:<10.4f} | Val-Acc: {val_acc:<10.4f}"
-                )
+            )
 
             self.update_figure(*fig_params)
 
@@ -157,8 +219,10 @@ class MultiLayerPerceptron:
 
     def setup_figure(self):
         plt.ion()
-        fix, (ax, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+        fix, axes = plt.subplots(5, 1, figsize=(10, 8))
         
+        ax, ax2, ax3, ax4, ax5 = axes
+
         # Subplot for loss
         line1, = ax.plot(self.int_plot.train_losses, label="Training Loss")
         line2, = ax.plot(self.int_plot.val_losses, label="Validation Loss")
@@ -174,11 +238,35 @@ class MultiLayerPerceptron:
         ax2.set_xlabel("Epochs")
         ax2.set_ylabel("Accuracy")
         ax2.set_title("Accuracy by epochs")
+
+        # Subplot for precision
+        line5, = ax3.plot(self.int_plot.train_precision, label="Training Precision")
+        line6, = ax3.plot(self.int_plot.val_precision, label="Validation Precision")
+        ax3.legend()
+        ax3.set_xlabel("Epochs")
+        ax3.set_ylabel("Precision")
+        ax3.set_title("Precision by epochs")        
+
+        # Subplot for recall
+        line7, = ax4.plot(self.int_plot.train_recall, label="Training Recall")
+        line8, = ax4.plot(self.int_plot.train_recall, label="Validation Recall")
+        ax4.legend()
+        ax4.set_xlabel("Epochs")
+        ax4.set_ylabel("Recall")
+        ax4.set_title("Recall by epochs")  
+
+        # Subplot for f1 score
+        line9, = ax5.plot(self.int_plot.train_f1_score, label="Training F1 Score")
+        line10, = ax5.plot(self.int_plot.train_f1_score, label="Validation F1 Score")
+        ax5.legend()
+        ax5.set_xlabel("Epochs")
+        ax5.set_ylabel("Recall")
+        ax5.set_title("F1 Score by epochs")  
         
-        return ax, ax2, line1, line2, line3, line4
+        return ax, ax2, ax3, ax4, ax5, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10
 
 
-    def update_figure(self, ax, ax2, line1, line2, line3, line4):
+    def update_figure(self, ax, ax2, ax3, ax4, ax5, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10):
         # Update interactive plot for loss
         line1.set_ydata(self.int_plot.train_losses)
         line1.set_xdata(range(len(self.int_plot.train_losses)))
@@ -194,6 +282,31 @@ class MultiLayerPerceptron:
         line4.set_xdata(range(len(self.int_plot.val_accuracies)))
         ax2.relim()
         ax2.autoscale_view()
+
+        # Update interactive plot for precision
+        line5.set_ydata(self.int_plot.train_precision)
+        line5.set_xdata(range(len(self.int_plot.train_precision)))
+        line6.set_ydata(self.int_plot.val_precision)
+        line6.set_xdata(range(len(self.int_plot.val_precision)))
+        ax3.relim()
+        ax3.autoscale_view()
+
+        # Update interactive plot for recall
+        line7.set_ydata(self.int_plot.train_recall)
+        line7.set_xdata(range(len(self.int_plot.train_recall)))
+        line8.set_ydata(self.int_plot.val_recall)
+        line8.set_xdata(range(len(self.int_plot.val_recall)))
+        ax4.relim()
+        ax4.autoscale_view()
+
+        # Update interactive plot for f1 score
+        line9.set_ydata(self.int_plot.train_f1_score)
+        line9.set_xdata(range(len(self.int_plot.train_f1_score)))
+        line10.set_ydata(self.int_plot.val_f1_score)
+        line10.set_xdata(range(len(self.int_plot.val_f1_score)))
+        ax5.relim()
+        ax5.autoscale_view()
+
         clear_output(wait=True)
         plt.draw()
         plt.pause(0.01)

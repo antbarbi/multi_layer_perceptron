@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
-from .model.multi_layer_perceptron import MultiLayerPerceptron
+from .model.multi_layer_perceptron import MultiLayerPerceptron, accuracy
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.metrics import accuracy_score
 import argparse
 import os
 
@@ -60,9 +59,9 @@ def main(*metric_files, model_file: str = None, data_test: str = None) -> None:
     true_labels = np.argmax(y, axis=1)
 
     # Calculate accuracy
-    accuracy = accuracy_score(true_labels, pred_labels)
+    res_accuracy = accuracy(true_labels, pred_labels)
     loss = model.loss["binaryCrossentropy"](y, pred)
-    print(f"Accuracy: {accuracy}, Loss: {loss}")
+    print(f"Accuracy: {res_accuracy}, Loss: {loss}")
 
 
 
