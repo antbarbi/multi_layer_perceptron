@@ -82,7 +82,7 @@ def main(training_dataset, validation_dataset, config_file, output_file):
     with open(config_file, "r") as file:
         config = json.load(file)
 
-    network = model.createNetwork([create_layer(layer) for layer in config["layers"]], 31)
+    network = model.create_network([create_layer(layer) for layer in config["layers"]], 31)
 
     model.fit(
         network,

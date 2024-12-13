@@ -67,7 +67,7 @@ class MultiLayerPerceptron:
 
         self.multi_plots: list[InteractivePlot] = []
 
-    def createNetwork(self, layers: list[DenseLayer], input_shape: int) -> list[DenseLayer]:
+    def create_network(self, layers: list[DenseLayer], input_shape: int) -> list[DenseLayer]:
         network = layers
         for i, layer in enumerate(network):
             if i == 0:
