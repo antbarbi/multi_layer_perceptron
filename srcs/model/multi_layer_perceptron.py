@@ -2,6 +2,7 @@ from .layers import DenseLayer
 import pandas as pd
 import numpy as np
 import json
+import sys
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 from dataclasses import dataclass, field
@@ -163,9 +164,12 @@ class MultiLayerPerceptron:
             # Calculate metrics
             loss = L[loss_func](y_train, forward_output)
             train_acc = accuracy(y_train, forward_output)
-            train_precision = precision_score(y_train, forward_output, average="macro", zero_division=0)
-            train_recall = recall_score(y_train, forward_output, average="macro", zero_division=0)
-            train_f1_score = f1_score(y_train, forward_output, average="macro", zero_division=0)
+            
+            x_train_pred = (forward_output > 0.5).astype(int)
+            
+            train_precision = precision_score(y_train, x_train_pred, average="macro", zero_division=0)
+            train_recall = recall_score(y_train, x_train_pred, average="macro", zero_division=0)
+            train_f1_score = f1_score(y_train, x_train_pred, average="macro", zero_division=0)
             
             self.int_plot.train_losses.append(loss)
             self.int_plot.train_accuracies.append(train_acc)
@@ -188,21 +192,44 @@ class MultiLayerPerceptron:
             # Calculate metrics
             val_loss = L[loss_func](y_valid, val_output)
             val_acc = accuracy(y_valid, val_output)
-            val_precision = precision_score(y_train, forward_output, average="macro", zero_division=0)
-            val_recall = recall_score(y_train, forward_output, average="macro", zero_division=0)
-            val_f1_score = f1_score(y_train, forward_output, average="macro", zero_division=0)
 
+            y_val_pred = (val_output > 0.5).astype(int)
 
+            val_precision = precision_score(y_valid, y_val_pred, average="macro", zero_division=0)
+            val_recall = recall_score(y_valid, y_val_pred, average="macro", zero_division=0)
+            val_f1_score = f1_score(y_valid, y_val_pred, average="macro", zero_division=0)
+
+            
             self.int_plot.val_accuracies.append(val_acc)
             self.int_plot.val_losses.append(val_loss)
             self.int_plot.val_precision.append(val_precision)
             self.int_plot.val_recall.append(val_recall)
             self.int_plot.val_f1_score.append(val_f1_score)
 
-            print(
-                f"Epoch {epoch + 1}/{epochs:<3} | Loss: {loss:<10.4f} | Val-Loss: {val_loss:<10.4f} | "
-                f"Train-Acc: {train_acc:<10.4f} | Val-Acc: {val_acc:<10.4f}"
-            )
+            train_metrics = \
+                f"{'Epoch ' + str(epoch + 1) + '/' + str(epochs):<10} | " \
+                f"loss: {loss:<8.4f} | " \
+                f"acc: {train_acc:<8.4f} | " \
+                f"prec: {train_precision:<8.4f} | " \
+                f"recall: {train_recall:<8.4f} | " \
+                f"f1: {train_f1_score:<8.4f}" \
+
+            validation_metrics = \
+                f"{'Validation':<{10+len(train_metrics)-94}} | " \
+                f"loss: {val_loss:<8.4f} | " \
+                f"acc: {val_acc:<8.4f} | " \
+                f"prec: {val_precision:<8.4f} | " \
+                f"recall: {val_recall:<8.4f} | " \
+                f"f1: {val_f1_score:<8.4f}" \
+
+             # If not the first epoch, move the cursor up two lines to overwrite
+            if epoch > 0:
+                sys.stdout.write("\033[F\033[K")  # Move cursor up one line and clear it
+                sys.stdout.write("\033[F\033[K")  # Repeat for second line
+
+            # Print the metrics
+            print(train_metrics)
+            print(validation_metrics)
 
             self.update_figure(*fig_params)
 
@@ -249,7 +276,7 @@ class MultiLayerPerceptron:
 
         # Subplot for recall
         line7, = ax4.plot(self.int_plot.train_recall, label="Training Recall")
-        line8, = ax4.plot(self.int_plot.train_recall, label="Validation Recall")
+        line8, = ax4.plot(self.int_plot.val_recall, label="Validation Recall")
         ax4.legend()
         ax4.set_xlabel("Epochs")
         ax4.set_ylabel("Recall")
@@ -257,10 +284,10 @@ class MultiLayerPerceptron:
 
         # Subplot for f1 score
         line9, = ax5.plot(self.int_plot.train_f1_score, label="Training F1 Score")
-        line10, = ax5.plot(self.int_plot.train_f1_score, label="Validation F1 Score")
+        line10, = ax5.plot(self.int_plot.val_f1_score, label="Validation F1 Score")
         ax5.legend()
         ax5.set_xlabel("Epochs")
-        ax5.set_ylabel("Recall")
+        ax5.set_ylabel("F1 Score")
         ax5.set_title("F1 Score by epochs")  
         
         return ax, ax2, ax3, ax4, ax5, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10
