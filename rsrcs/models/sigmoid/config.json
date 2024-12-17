@@ -1,0 +1,16 @@
+{
+    "layers": [
+      {"units": 100, "activation": "sigmoid", "initializer": "xavierUniform"},
+      {"units": 100, "activation": "sigmoid", "initializer": "xavierUniform"},
+      {"units": 100, "activation": "sigmoid", "initializer": "xavierUniform"},
+      {"units": 100, "activation": "sigmoid", "initializer": "xavierUniform"},
+      {"units": 100, "activation": "sigmoid", "initializer": "xavierUniform"},
+      {"units": 2, "activation": "softmax", "initializer": "xavierUniform"}      
+    ],
+    "learning_rate": 0.0001,
+    "batch_size": 8,
+    "epochs": 2000,
+    "use_momentum": false,
+    "momentum": 0.8,
+    "loss_function": "binaryCrossentropy"
+  }
