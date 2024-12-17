@@ -6,8 +6,7 @@ import sys
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 from dataclasses import dataclass, field
-from sklearn.metrics import precision_score, recall_score, f1_score
-
+from .metrics_score import precision_score, recall_score, f1_score, accuracy_score
 
 def binaryCrossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
@@ -21,47 +20,6 @@ L = {
     "binaryCrossentropy": binaryCrossentropy,
 }
 
-
-def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    predictions = (y_pred > 0.5).astype(int)
-    return np.mean(predictions == y_true)
-
-
-def precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    y_pred_binary = (y_pred > 0.5).astype(int)
-    true_positives = np.sum((y_pred_binary == 1) & (y_true == 1))
-    predicted_positives = np.sum(y_pred_binary == 1)
-    if predicted_positives == 0:
-        return 0.0
-    return true_positives / predicted_positives
-
-
-def recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    y_pred_binary = (y_pred > 0.5).astype(int)
-    true_positives = np.sum((y_pred_binary == 1) & (y_true == 1))
-    actual_positives = np.sum(y_true == 1)
-    if actual_positives == 0:
-        return 0.0
-    return true_positives / actual_positives
-
-
-# def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-#     prec = precision(y_true, y_pred)
-#     rec = recall(y_true, y_pred)
-#     if (prec + rec) == 0:
-#         return 0.0
-#     return 2 * (prec * rec) / (prec + rec)
-
-
-def metrics(y_true: np.ndarray, y_pred: np.ndarray) -> str:
-    # acc = accuracy(y_true, y_pred)
-    predictions = (y_pred > 0.5).astype(int)
-    prec = precision_score(y_true, predictions, average="macro", zero_division=0)
-    rec = recall_score(y_true, predictions, average="macro", zero_division=0)
-    score = f1_score(y_true, predictions, average="macro", zero_division=0)
-
-    print(f"Train-precision: {prec:<10.4f} | train_recall: {rec:<10.4f} | train_f1_score: {score:<10.4f} ")
-    
 
 @dataclass
 class InteractivePlot:
@@ -163,13 +121,10 @@ class MultiLayerPerceptron:
 
             # Calculate metrics
             loss = L[loss_func](y_train, forward_output)
-            train_acc = accuracy(y_train, forward_output)
-            
-            x_train_pred = (forward_output > 0.5).astype(int)
-            
-            train_precision = precision_score(y_train, x_train_pred, average="macro", zero_division=0)
-            train_recall = recall_score(y_train, x_train_pred, average="macro", zero_division=0)
-            train_f1_score = f1_score(y_train, x_train_pred, average="macro", zero_division=0)
+            train_acc = accuracy_score(y_train, forward_output)
+            train_precision = precision_score(y_train, forward_output)
+            train_recall = recall_score(y_train, forward_output)
+            train_f1_score = f1_score(y_train, forward_output)
             
             self.int_plot.train_losses.append(loss)
             self.int_plot.train_accuracies.append(train_acc)
@@ -191,13 +146,10 @@ class MultiLayerPerceptron:
 
             # Calculate metrics
             val_loss = L[loss_func](y_valid, val_output)
-            val_acc = accuracy(y_valid, val_output)
-
-            y_val_pred = (val_output > 0.5).astype(int)
-
-            val_precision = precision_score(y_valid, y_val_pred, average="macro", zero_division=0)
-            val_recall = recall_score(y_valid, y_val_pred, average="macro", zero_division=0)
-            val_f1_score = f1_score(y_valid, y_val_pred, average="macro", zero_division=0)
+            val_acc = accuracy_score(y_valid, val_output)
+            val_precision = precision_score(y_valid, val_output)
+            val_recall = recall_score(y_valid, val_output)
+            val_f1_score = f1_score(y_valid, val_output)
 
             
             self.int_plot.val_accuracies.append(val_acc)
@@ -222,10 +174,9 @@ class MultiLayerPerceptron:
                 f"recall: {val_recall:<8.4f} | " \
                 f"f1: {val_f1_score:<8.4f}" \
 
-             # If not the first epoch, move the cursor up two lines to overwrite
             if epoch > 0:
-                sys.stdout.write("\033[F\033[K")  # Move cursor up one line and clear it
-                sys.stdout.write("\033[F\033[K")  # Repeat for second line
+                sys.stdout.write("\033[F\033[K")
+                sys.stdout.write("\033[F\033[K")
 
             # Print the metrics
             print(train_metrics)
@@ -246,7 +197,7 @@ class MultiLayerPerceptron:
 
     def setup_figure(self):
         plt.ion()
-        fix, axes = plt.subplots(5, 1, figsize=(10, 8))
+        fix, axes = plt.subplots(5, 1, figsize=(8, 8))
         
         ax, ax2, ax3, ax4, ax5 = axes
 
@@ -288,7 +239,9 @@ class MultiLayerPerceptron:
         ax5.legend()
         ax5.set_xlabel("Epochs")
         ax5.set_ylabel("F1 Score")
-        ax5.set_title("F1 Score by epochs")  
+        ax5.set_title("F1 Score by epochs")
+
+        plt.tight_layout()
         
         return ax, ax2, ax3, ax4, ax5, line1, line2, line3, line4, line5, line6, line7, line8, line9, line10
 
@@ -358,7 +311,14 @@ class MultiLayerPerceptron:
             "train_losses": self.int_plot.train_losses,
             "val_losses": self.int_plot.val_losses,
             "train_accuracies": self.int_plot.train_accuracies,
-            "val_accuracies": self.int_plot.val_accuracies
+            "val_accuracies": self.int_plot.val_accuracies,
+            "train_precision": self.int_plot.train_precision,
+            "val_precision": self.int_plot.val_precision,
+            "train_recall": self.int_plot.train_recall,
+            "val_recall": self.int_plot.val_recall,
+            "train_f1_score": self.int_plot.train_f1_score,
+            "val_f1_score": self.int_plot.val_f1_score,
+            
         }
         with open(file_name, "w") as file:
             json.dump(metrics, file, indent=4)
@@ -374,35 +334,108 @@ class MultiLayerPerceptron:
             self.multi_plots[i].filename = file_name
             self.multi_plots[i].train_losses = metrics.get("train_losses", [])
             self.multi_plots[i].val_losses = metrics.get("val_losses", [])
-            self.multi_plots[i].val_accuracies = metrics.get("train_accuracies", [])
+            self.multi_plots[i].train_accuracies = metrics.get("train_accuracies", [])
             self.multi_plots[i].val_accuracies = metrics.get("val_accuracies", [])
+            self.multi_plots[i].train_precision = metrics.get("train_precision", [])
+            self.multi_plots[i].val_precision = metrics.get("val_precision", [])
+            self.multi_plots[i].train_recall = metrics.get("train_recall", [])
+            self.multi_plots[i].val_recall = metrics.get("val_recall", [])
+            self.multi_plots[i].train_f1_score = metrics.get("train_f1_score", [])
+            self.multi_plots[i].val_f1_score = metrics.get("val_f1_score", [])
 
             print(f"Training metrics loaded from {file_name}")
 
 
     def plot_metrics(self):
-        plt.figure(figsize=(12, 5))
-        rows = len(self.multi_plots)
+        plt.figure(figsize=(14, 8))
 
-        for i, plot in enumerate(self.multi_plots):
-            loss_subplot = 2 * i + 1      # Odd indices for Loss
-            acc_subplot = 2 * i + 2 
-            plt.subplot(rows, 2, loss_subplot)
-            plt.plot(plot.train_losses, label="Training Loss")
-            plt.plot(plot.val_losses, label="Validation Loss")
+        plt.subplot(2, 5, 1)
+        plt.title("Training Loss")
+        for plot in self.multi_plots:
+            plt.plot(plot.train_losses, label=plot.filename)
             plt.xlabel("Epochs")
             plt.ylabel("Loss")
-            plt.title(f"Loss by Epochs - {plot.filename}")
+            plt.legend()
+            plt.grid(True)
+        
+        plt.subplot(2, 5, 6)
+        plt.title("Validation Loss")
+        for plot in self.multi_plots:
+            plt.plot(plot.val_losses, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("Loss")
             plt.legend()
             plt.grid(True)
 
-            # Plot Accuracy
-            plt.subplot(rows, 2, acc_subplot)
-            plt.plot(plot.train_accuracies, label="Training Accuracy")
-            plt.plot(plot.val_accuracies, label="Validation Accuracy")
+        plt.subplot(2, 5, 2)
+        plt.title("Train Accuracy")
+        for plot in self.multi_plots:
+            plt.plot(plot.train_accuracies, label=plot.filename)
             plt.xlabel("Epochs")
             plt.ylabel("Accuracy")
-            plt.title(f"Accuracy by Epochs - {plot.filename}")
+            plt.legend()
+            plt.grid(True)
+            
+        plt.subplot(2, 5, 7)
+        plt.title("Validation Accuracy")
+        for plot in self.multi_plots:
+            plt.plot(plot.val_accuracies, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("Accuracy")
+            plt.legend()
+            plt.grid(True)
+
+        plt.subplot(2, 5, 3)
+        plt.title("Training Precision")
+        for plot in self.multi_plots:
+            plt.plot(plot.train_precision, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("Precision")
+            plt.legend()
+            plt.grid(True)
+
+        plt.subplot(2, 5, 8)
+        plt.title("Validation Precision")
+        for plot in self.multi_plots:
+            plt.plot(plot.val_precision, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("Precision")
+            plt.legend()
+            plt.grid(True)
+
+        plt.subplot(2, 5, 4)
+        plt.title("Training Recall")
+        for plot in self.multi_plots:
+            plt.plot(plot.train_recall, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("Recall")
+            plt.legend()
+            plt.grid(True)
+
+        plt.subplot(2, 5, 9)
+        plt.title("Validation Recall")
+        for plot in self.multi_plots:
+            plt.plot(plot.val_recall, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("Recall")
+            plt.legend()
+            plt.grid(True)
+
+        plt.subplot(2, 5, 5)
+        plt.title("Training F1 Score")
+        for plot in self.multi_plots:
+            plt.plot(plot.train_f1_score, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("F1 Score")
+            plt.legend()
+            plt.grid(True)
+
+        plt.subplot(2, 5, 10)
+        plt.title("Validation F1 Score")
+        for plot in self.multi_plots:
+            plt.plot(plot.val_f1_score, label=plot.filename)
+            plt.xlabel("Epochs")
+            plt.ylabel("F1 Score")
             plt.legend()
             plt.grid(True)
 

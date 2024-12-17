@@ -72,11 +72,12 @@ def main(training_dataset, validation_dataset, config_file, output_file):
     y_train = data[["type"]]
     y_valid = valid[["type"]]
 
+
     ohe = OneHotEncoder(sparse_output=False)
     y_train = ohe.fit_transform(y_train)
     y_valid = ohe.fit_transform(y_valid)
 
-
+    # Run the model
     model =  MultiLayerPerceptron()
 
     with open(config_file, "r") as file:
@@ -98,8 +99,6 @@ def main(training_dataset, validation_dataset, config_file, output_file):
 
     model.save_model()
     model.save_metrics(output_file)
-    
-
 
 
 if __name__ == "__main__":

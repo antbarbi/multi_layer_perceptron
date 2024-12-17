@@ -11,5 +11,5 @@
     "epochs": 2000,
     "loss_function": "binaryCrossentropy",
     "use_momentum": true,
-    "momentum": 0.9
+    "momentum": 0.8
   }
