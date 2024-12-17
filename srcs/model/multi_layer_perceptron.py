@@ -197,9 +197,11 @@ class MultiLayerPerceptron:
 
     def setup_figure(self):
         plt.ion()
-        fix, axes = plt.subplots(5, 1, figsize=(8, 8))
+        fix, axes = plt.subplots(2, 3, figsize=(12, 6))
+        axes = axes.flatten()
         
-        ax, ax2, ax3, ax4, ax5 = axes
+        ax, ax2, ax3, ax4, ax5, ax6 = axes
+        ax6.axis('off')
 
         # Subplot for loss
         line1, = ax.plot(self.int_plot.train_losses, label="Training Loss")
